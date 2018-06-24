@@ -22,21 +22,21 @@ const MongoClient = require('mongodb').MongoClient
 
 var db
 MongoClient.connect('mongodb://firstdb:firstdb123@ds261450.mlab.com:61450/nodecrud',(err,client) => {
-    //if(err) return console.log(err)
+    if(err) return console.log(err)
     db = client.db('nodecrud')
     
     app.listen(3000,function() {
         console.log('listening on 3000')
- app.post('/quotes',(req,res) => {
+    app.post('/quotes',(req,res) => {
        db.collection('quotes').save(req.body,(err,result) =>{
-           //if (err) return console.log(err)
+           if (err) return console.log(err)
 
            console.log('saved to database')
            res.redirect('/')
         
         })
-    })
-    })
+     })
+  })
 })
 app.set('view engine','ejs');
 
@@ -49,8 +49,10 @@ app.get('/',(req,res) => {
     })
 })
 
+app.use(express.static('public'))
 app.use(bodyParser.json())
-app.put('/quotes', (req, res) => {
+
+app.put('/:quotes', (req, res) => {
     db.collection('quotes')
     .findOneAndUpdate({name: 'Yoda'}, {
       $set: {
@@ -61,9 +63,15 @@ app.put('/quotes', (req, res) => {
       sort: {_id: -1},
       upsert: true
     }, (err, result) => {
-      //if (err) return res.send(err)
+      if (err) return res.send(err)
       res.send(result)
     })
   })
 
-
+app.delete('/:quotes', (req, res) => {
+  db.collection('quotes').findOneAndDelete({name: req.body.name},
+  (err, result) => {
+    if (err) return res.send(500, err)
+    res.send({message: 'A darth vadar quote got deleted'})
+  })
+})
